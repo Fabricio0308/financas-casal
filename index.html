@@ -269,18 +269,18 @@
   </nav>
 
   <div class="sidebar-users">
-    <div class="user-pill active" onclick="toggleUser('lucas')">
+    <div class="user-pill active" onclick="toggleUser('fabricio')">
       <div class="user-avatar" style="background:rgba(108,138,255,0.2);color:var(--accent);">L</div>
       <div class="user-info">
-        <div class="user-name">Lucas</div>
+        <div class="user-name">Fabrício</div>
         <div class="user-role">Titular</div>
       </div>
       <span class="user-check">✓</span>
     </div>
-    <div class="user-pill" onclick="toggleUser('ana')">
+    <div class="user-pill" onclick="toggleUser('tainara')">
       <div class="user-avatar" style="background:rgba(244,114,182,0.2);color:var(--pink);">A</div>
       <div class="user-info">
-        <div class="user-name">Ana</div>
+        <div class="user-name">Tainara</div>
         <div class="user-role">Cônjuge</div>
       </div>
       <span class="user-check" style="visibility:hidden;">✓</span>
@@ -406,8 +406,8 @@
           </select>
           <select class="form-select" style="width:130px;padding:7px 10px;" onchange="filterUser(this.value)">
             <option value="all">Casal todo</option>
-            <option value="lucas">Lucas</option>
-            <option value="ana">Ana</option>
+            <option value="fabricio">Fabrício</option>
+            <option value="tainara">Tainara</option>
           </select>
           <button class="btn btn-primary" onclick="openModal('nova-tx')">＋ Nova</button>
         </div>
@@ -445,18 +445,18 @@
           <div class="form-group">
             <label class="form-label">Usuário</label>
             <select class="form-select" id="import-user">
-              <option>Lucas</option>
-              <option>Ana</option>
+              <option>Fabrício</option>
+              <option>Tainara</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Conta / Cartão</label>
             <select class="form-select" id="import-conta">
-              <option>Nubank — Conta corrente (Lucas)</option>
-              <option>Itaú — Conta corrente (Lucas)</option>
-              <option>Nubank Cartão — Crédito (Lucas)</option>
-              <option>Inter — Conta (Ana)</option>
-              <option>C6 Cartão — Crédito (Ana)</option>
+              <option>Nubank — Conta corrente (Fabrício)</option>
+              <option>Itaú — Conta corrente (Fabrício)</option>
+              <option>Nubank Cartão — Crédito (Fabrício)</option>
+              <option>Inter — Conta (Tainara)</option>
+              <option>C6 Cartão — Crédito (Tainara)</option>
             </select>
           </div>
           <div class="form-group">
@@ -506,11 +506,11 @@
         <button class="btn btn-primary" onclick="openModal('nova-conta')">＋ Nova conta</button>
       </div>
 
-      <div class="mb-3 text-sm text-muted font-bold" style="text-transform:uppercase;letter-spacing:0.6px;">Lucas</div>
-      <div class="grid-3 mb-4" id="contas-lucas"></div>
+      <div class="mb-3 text-sm text-muted font-bold" style="text-transform:uppercase;letter-spacing:0.6px;">Fabrício</div>
+      <div class="grid-3 mb-4" id="contas-fabricio"></div>
 
-      <div class="mb-3 text-sm text-muted font-bold" style="text-transform:uppercase;letter-spacing:0.6px;">Ana</div>
-      <div class="grid-3 mb-4" id="contas-ana"></div>
+      <div class="mb-3 text-sm text-muted font-bold" style="text-transform:uppercase;letter-spacing:0.6px;">Tainara</div>
+      <div class="grid-3 mb-4" id="contas-tainara"></div>
     </div>
 
     <!-- ========== CATEGORIAS ========== -->
@@ -571,7 +571,7 @@
       <div class="section-header mb-4">
         <div>
           <div class="section-title">Visão do casal</div>
-          <div class="section-sub">Comparativo de finanças entre Lucas e Ana</div>
+          <div class="section-sub">Comparativo de finanças entre Fabrício e Tainara</div>
         </div>
       </div>
 
@@ -579,7 +579,7 @@
         <div class="card">
           <div class="flex items-center gap-3 mb-3">
             <div class="user-avatar" style="width:36px;height:36px;background:rgba(108,138,255,0.2);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">L</div>
-            <div><div style="font-weight:700;">Lucas</div><div class="text-sm text-muted">Renda principal</div></div>
+            <div><div style="font-weight:700;">Fabrício</div><div class="text-sm text-muted">Renda principal</div></div>
           </div>
           <div class="flex justify-between mb-2"><span class="text-muted text-sm">Salário</span><span class="font-bold text-green">R$ 8.500</span></div>
           <div class="flex justify-between mb-2"><span class="text-muted text-sm">Despesas</span><span class="font-bold text-red">R$ 3.640</span></div>
@@ -589,7 +589,7 @@
         <div class="card">
           <div class="flex items-center gap-3 mb-3">
             <div class="user-avatar" style="width:36px;height:36px;background:rgba(244,114,182,0.2);color:var(--pink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">A</div>
-            <div><div style="font-weight:700;">Ana</div><div class="text-sm text-muted">Renda secundária</div></div>
+            <div><div style="font-weight:700;">Tainara</div><div class="text-sm text-muted">Renda secundária</div></div>
           </div>
           <div class="flex justify-between mb-2"><span class="text-muted text-sm">Salário</span><span class="font-bold text-green">R$ 6.000</span></div>
           <div class="flex justify-between mb-2"><span class="text-muted text-sm">Despesas</span><span class="font-bold text-red">R$ 2.620</span></div>
@@ -610,8 +610,8 @@
             <canvas id="chartCasal" width="220" height="220"></canvas>
           </div>
           <div>
-            <div class="flex items-center gap-2 mb-3"><div style="width:12px;height:12px;border-radius:3px;background:var(--accent);"></div><div><div class="font-bold">Lucas</div><div class="text-sm text-muted">R$ 3.640 • 58%</div></div></div>
-            <div class="flex items-center gap-2"><div style="width:12px;height:12px;border-radius:3px;background:var(--pink);"></div><div><div class="font-bold">Ana</div><div class="text-sm text-muted">R$ 2.620 • 42%</div></div></div>
+            <div class="flex items-center gap-2 mb-3"><div style="width:12px;height:12px;border-radius:3px;background:var(--accent);"></div><div><div class="font-bold">Fabrício</div><div class="text-sm text-muted">R$ 3.640 • 58%</div></div></div>
+            <div class="flex items-center gap-2"><div style="width:12px;height:12px;border-radius:3px;background:var(--pink);"></div><div><div class="font-bold">Tainara</div><div class="text-sm text-muted">R$ 2.620 • 42%</div></div></div>
           </div>
         </div>
       </div>
@@ -644,8 +644,8 @@
       <div class="form-group">
         <label class="form-label">Usuário</label>
         <select class="form-select" id="tx-user">
-          <option value="lucas">Lucas</option>
-          <option value="ana">Ana</option>
+          <option value="fabricio">Fabrício</option>
+          <option value="tainara">Tainara</option>
         </select>
       </div>
     </div>
@@ -683,11 +683,11 @@
       <div class="form-group">
         <label class="form-label">Conta</label>
         <select class="form-select" id="tx-conta">
-          <option>Nubank (Lucas)</option>
-          <option>Itaú (Lucas)</option>
-          <option>Inter (Ana)</option>
-          <option>Nubank Cartão (Lucas)</option>
-          <option>C6 Cartão (Ana)</option>
+          <option>Nubank (Fabrício)</option>
+          <option>Itaú (Fabrício)</option>
+          <option>Inter (Tainara)</option>
+          <option>Nubank Cartão (Fabrício)</option>
+          <option>C6 Cartão (Tainara)</option>
         </select>
       </div>
     </div>
@@ -705,7 +705,7 @@
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Usuário</label>
-        <select class="form-select"><option>Lucas</option><option>Ana</option></select>
+        <select class="form-select"><option>Fabrício</option><option>Tainara</option></select>
       </div>
       <div class="form-group">
         <label class="form-label">Tipo</label>
@@ -773,7 +773,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Aplicar para</label>
-        <select class="form-select"><option>Casal todo</option><option>Lucas</option><option>Ana</option></select>
+        <select class="form-select"><option>Casal todo</option><option>Fabrício</option><option>Tainara</option></select>
       </div>
     </div>
     <div class="form-footer">
@@ -788,8 +788,8 @@
 // DATA
 // ============================================================
 const USERS = {
-  lucas: { name:'Lucas', color:'#6c8aff', bg:'rgba(108,138,255,0.18)' },
-  ana:   { name:'Ana',   color:'#f472b6', bg:'rgba(244,114,182,0.18)' }
+  fabricio: { name:'Fabrício', color:'#6c8aff', bg:'rgba(108,138,255,0.18)' },
+  tainara:   { name:'Tainara',   color:'#f472b6', bg:'rgba(244,114,182,0.18)' }
 };
 
 const CATS = [
@@ -807,18 +807,18 @@ const CATS = [
 ];
 
 let transactions = [
-  { id:1,  tipo:'receita', user:'lucas', desc:'Salário maio',       cat:'salario',     conta:'Itaú',    valor:8500, data:'2025-06-05' },
-  { id:2,  tipo:'receita', user:'ana',   desc:'Salário maio',       cat:'salario',     conta:'Inter',   valor:6000, data:'2025-06-05' },
-  { id:3,  tipo:'despesa', user:'lucas', desc:'Aluguel',            cat:'moradia',     conta:'Itaú',    valor:1800, data:'2025-06-06' },
-  { id:4,  tipo:'despesa', user:'lucas', desc:'Supermercado Extra', cat:'mercado',     conta:'Nubank Cartão', valor:420, data:'2025-06-07' },
-  { id:5,  tipo:'despesa', user:'ana',   desc:'Conta de luz',       cat:'luz',         conta:'Inter',   valor:185, data:'2025-06-08' },
-  { id:6,  tipo:'despesa', user:'lucas', desc:'Gasolina Posto BR',  cat:'combustivel', conta:'Nubank Cartão', valor:210, data:'2025-06-09' },
-  { id:7,  tipo:'despesa', user:'ana',   desc:'Internet Vivo',      cat:'internet',    conta:'Inter',   valor:120, data:'2025-06-10' },
-  { id:8,  tipo:'despesa', user:'ana',   desc:'Conta de água',      cat:'agua',        conta:'Inter',   valor:68, data:'2025-06-10' },
-  { id:9,  tipo:'despesa', user:'lucas', desc:'Netflix + Spotify',  cat:'lazer',       conta:'Nubank Cartão', valor:75, data:'2025-06-11' },
-  { id:10, tipo:'despesa', user:'ana',   desc:'Farmácia',           cat:'saude',       conta:'C6 Cartão', valor:134, data:'2025-06-12' },
-  { id:11, tipo:'despesa', user:'lucas', desc:'Posto Ipiranga',     cat:'combustivel', conta:'Nubank Cartão', valor:190, data:'2025-06-13' },
-  { id:12, tipo:'despesa', user:'ana',   desc:'Mercado Livre',      cat:'mercado',     conta:'C6 Cartão', valor:280, data:'2025-06-14' },
+  { id:1,  tipo:'receita', user:'fabricio', desc:'Salário maio',       cat:'salario',     conta:'Itaú',    valor:8500, data:'2025-06-05' },
+  { id:2,  tipo:'receita', user:'tainara',   desc:'Salário maio',       cat:'salario',     conta:'Inter',   valor:6000, data:'2025-06-05' },
+  { id:3,  tipo:'despesa', user:'fabricio', desc:'Aluguel',            cat:'moradia',     conta:'Itaú',    valor:1800, data:'2025-06-06' },
+  { id:4,  tipo:'despesa', user:'fabricio', desc:'Supermercado Extra', cat:'mercado',     conta:'Nubank Cartão', valor:420, data:'2025-06-07' },
+  { id:5,  tipo:'despesa', user:'tainara',   desc:'Conta de luz',       cat:'luz',         conta:'Inter',   valor:185, data:'2025-06-08' },
+  { id:6,  tipo:'despesa', user:'fabricio', desc:'Gasolina Posto BR',  cat:'combustivel', conta:'Nubank Cartão', valor:210, data:'2025-06-09' },
+  { id:7,  tipo:'despesa', user:'tainara',   desc:'Internet Vivo',      cat:'internet',    conta:'Inter',   valor:120, data:'2025-06-10' },
+  { id:8,  tipo:'despesa', user:'tainara',   desc:'Conta de água',      cat:'agua',        conta:'Inter',   valor:68, data:'2025-06-10' },
+  { id:9,  tipo:'despesa', user:'fabricio', desc:'Netflix + Spotify',  cat:'lazer',       conta:'Nubank Cartão', valor:75, data:'2025-06-11' },
+  { id:10, tipo:'despesa', user:'tainara',   desc:'Farmácia',           cat:'saude',       conta:'C6 Cartão', valor:134, data:'2025-06-12' },
+  { id:11, tipo:'despesa', user:'fabricio', desc:'Posto Ipiranga',     cat:'combustivel', conta:'Nubank Cartão', valor:190, data:'2025-06-13' },
+  { id:12, tipo:'despesa', user:'tainara',   desc:'Mercado Livre',      cat:'mercado',     conta:'C6 Cartão', valor:280, data:'2025-06-14' },
 ];
 
 let nextId = 13;
@@ -856,7 +856,7 @@ function toggleUser(u) {
     p.querySelector('.user-check').style.visibility = 'hidden';
   });
   const pills = document.querySelectorAll('.user-pill');
-  const idx = u === 'lucas' ? 0 : 1;
+  const idx = u === 'fabricio' ? 0 : 1;
   pills[idx].classList.add('active');
   pills[idx].querySelector('.user-check').style.visibility = 'visible';
 }
@@ -948,12 +948,12 @@ function renderTransactions(list) {
 // RENDER CONTAS
 // ============================================================
 const contasData = {
-  lucas: [
+  fabricio: [
     { banco:'Nubank', tipo:'Conta corrente', num:'••••  4821', saldo: 3240, cor:'#820ad1' },
     { banco:'Itaú',   tipo:'Conta corrente', num:'••••  9034', saldo: 1850, cor:'#f06000' },
     { banco:'Nubank', tipo:'Cartão de crédito', num:'••••  6612', saldo:-1280, cor:'#820ad1', fatura:true },
   ],
-  ana: [
+  tainara: [
     { banco:'Inter',  tipo:'Conta corrente', num:'••••  2290', saldo: 2640, cor:'#ff7a00' },
     { banco:'C6 Bank',tipo:'Conta corrente', num:'••••  5571', saldo:  510, cor:'#222' },
     { banco:'C6 Bank',tipo:'Cartão de crédito', num:'••••  8803', saldo:-900, cor:'#222', fatura:true },
@@ -961,7 +961,7 @@ const contasData = {
 };
 
 function renderContas() {
-  ['lucas','ana'].forEach(u => {
+  ['fabricio','tainara'].forEach(u => {
     const cont = document.getElementById('contas-' + u);
     if (!cont) return;
     cont.innerHTML = contasData[u].map(c => {
@@ -1151,8 +1151,8 @@ function renderRelatorios() {
         data:{
           labels:['Moradia','Mercado','Combustível','Lazer','Saúde','Internet','Água','Luz','Outros'],
           datasets:[
-            { label:'Lucas', data:[10800,4200,2400,2100,800,0,0,0,1900], backgroundColor:'rgba(108,138,255,0.75)', borderRadius:4, borderSkipped:false },
-            { label:'Ana',   data:[0,2800,800,1200,600,720,408,1110,900], backgroundColor:'rgba(244,114,182,0.75)', borderRadius:4, borderSkipped:false }
+            { label:'Fabrício', data:[10800,4200,2400,2100,800,0,0,0,1900], backgroundColor:'rgba(108,138,255,0.75)', borderRadius:4, borderSkipped:false },
+            { label:'Tainara',   data:[0,2800,800,1200,600,720,408,1110,900], backgroundColor:'rgba(244,114,182,0.75)', borderRadius:4, borderSkipped:false }
           ]
         },
         options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{usePointStyle:true,pointStyle:'circle'} } }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{callback:v=>'R$'+v/1000+'k'}} } }
@@ -1167,7 +1167,7 @@ function renderCasal() {
     if (ctx1 && !chartCasalDough) {
       chartCasalDough = new Chart(ctx1, {
         type:'doughnut',
-        data:{ labels:['Lucas','Ana'], datasets:[{ data:[3640,2620], backgroundColor:['#6c8aff','#f472b6'], borderWidth:0, hoverOffset:8 }] },
+        data:{ labels:['Fabrício','Tainara'], datasets:[{ data:[3640,2620], backgroundColor:['#6c8aff','#f472b6'], borderWidth:0, hoverOffset:8 }] },
         options:{ responsive:false, cutout:'65%', plugins:{ legend:{ display:false } } }
       });
     }
@@ -1178,8 +1178,8 @@ function renderCasal() {
         data:{
           labels:['Moradia','Mercado','Combustível','Lazer','Saúde','Internet'],
           datasets:[
-            { label:'Lucas', data:[1800,420,400,75,0,0], backgroundColor:'rgba(108,138,255,0.75)', borderRadius:4, borderSkipped:false },
-            { label:'Ana',   data:[0,280,0,0,134,120], backgroundColor:'rgba(244,114,182,0.75)', borderRadius:4, borderSkipped:false }
+            { label:'Fabrício', data:[1800,420,400,75,0,0], backgroundColor:'rgba(108,138,255,0.75)', borderRadius:4, borderSkipped:false },
+            { label:'Tainara',   data:[0,280,0,0,134,120], backgroundColor:'rgba(244,114,182,0.75)', borderRadius:4, borderSkipped:false }
           ]
         },
         options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{usePointStyle:true,pointStyle:'circle'} } }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{callback:v=>'R$ '+v}} } }
