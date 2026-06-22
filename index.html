@@ -149,6 +149,7 @@
     <div class="nav-section">Principal</div>
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
     <div class="nav-item" onclick="showPage('transacoes')"><span class="nav-icon">💳</span> Transações</div>
+    <div class="nav-item" onclick="showPage('importar')"><span class="nav-icon">📥</span> Importar extrato</div>
     <div class="nav-section" style="margin-top:8px;">Cadastros</div>
     <div class="nav-item" onclick="showPage('contas')"><span class="nav-icon">🏦</span> Contas e cartões</div>
     <div class="nav-item" onclick="showPage('categorias')"><span class="nav-icon">🏷️</span> Categorias</div>
@@ -240,6 +241,116 @@
           <div class="empty-state-icon">💳</div>
           <div class="empty-state-title">Nenhuma transação ainda</div>
           <div class="empty-state-sub">Clique em "＋ Nova" para adicionar seu primeiro lançamento</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORTAR EXTRATO -->
+    <div class="page" id="page-importar">
+      <div class="section-header mb-4">
+        <div><div class="section-title">Importar extrato</div><div class="section-sub">Importe o CSV do Bradesco ou Inter direto para o sistema</div></div>
+      </div>
+
+      <!-- PASSO 1: configurar -->
+      <div class="grid-2 mb-4">
+        <div class="chart-card">
+          <div class="chart-title mb-3" style="margin-bottom:14px;">1. Configurar importação</div>
+          <div class="form-group">
+            <label class="form-label">Usuário</label>
+            <select class="form-select" id="imp-user">
+              <option value="fabricio">Fabrício</option>
+              <option value="tainara">Tainara</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Banco</label>
+            <select class="form-select" id="imp-banco" onchange="updateImportDica()">
+              <option value="bradesco">Bradesco</option>
+              <option value="inter">Inter</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="imp-tipo">
+              <option value="corrente">Extrato conta corrente</option>
+              <option value="credito">Fatura cartão de crédito</option>
+            </select>
+          </div>
+          <div class="alert alert-info" id="imp-dica">
+            💡 <span id="imp-dica-texto">No Bradesco: acesse o app → Extrato → Exportar → CSV</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title mb-3" style="margin-bottom:14px;">2. Selecionar arquivo CSV</div>
+          <div style="border:2px dashed var(--border2);border-radius:var(--radius);padding:32px;text-align:center;background:var(--bg3);cursor:pointer;" onclick="document.getElementById('imp-file').click()">
+            <div style="font-size:40px;margin-bottom:12px;">📂</div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:6px;">Clique para selecionar o arquivo</div>
+            <div style="font-size:12px;color:var(--text3);">Suporta arquivos .CSV</div>
+            <input type="file" id="imp-file" accept=".csv,.CSV" style="display:none;" onchange="lerArquivoCSV(this)"/>
+          </div>
+          <div id="imp-arquivo-nome" style="margin-top:10px;font-size:12px;color:var(--text3);text-align:center;"></div>
+        </div>
+      </div>
+
+      <!-- PASSO 2: pré-visualização -->
+      <div id="imp-preview-section" style="display:none;">
+        <div class="alert alert-success" id="imp-alert-count">✅ Transações encontradas — revise antes de confirmar</div>
+        <div class="chart-card">
+          <div class="section-header mb-3">
+            <div>
+              <div class="chart-title">Pré-visualização</div>
+              <div class="chart-sub">Revise e desmarque o que não quiser importar</div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" onclick="cancelarImport()">Cancelar</button>
+              <button class="btn btn-primary btn-sm" onclick="confirmarImport()">✅ Confirmar importação</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead><tr>
+                <th style="width:40px;padding-left:16px;"></th>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th style="text-align:right;padding-right:16px;">Valor</th>
+              </tr></thead>
+              <tbody id="imp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Como exportar cada banco -->
+      <div class="grid-2 mt-4">
+        <div class="chart-card">
+          <div class="chart-title mb-3" style="margin-bottom:12px;">🔴 Como exportar do Bradesco</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+            <div style="margin-bottom:6px;"><span style="color:var(--accent);font-weight:600;">Conta corrente:</span></div>
+            <div>1. Abra o app ou site do Bradesco</div>
+            <div>2. Vá em <strong>Extrato</strong></div>
+            <div>3. Selecione o período desejado</div>
+            <div>4. Clique em <strong>Exportar → CSV</strong></div>
+            <div style="margin-top:10px;"><span style="color:var(--accent);font-weight:600;">Fatura cartão:</span></div>
+            <div>1. Vá em <strong>Cartões → Fatura</strong></div>
+            <div>2. Selecione o mês</div>
+            <div>3. Clique em <strong>Exportar → CSV</strong></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title mb-3" style="margin-bottom:12px;">🟠 Como exportar do Inter</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+            <div style="margin-bottom:6px;"><span style="color:var(--pink);font-weight:600;">Conta corrente:</span></div>
+            <div>1. Abra o app do Inter</div>
+            <div>2. Vá em <strong>Extrato</strong></div>
+            <div>3. Toque nos <strong>3 pontinhos</strong> no canto</div>
+            <div>4. Selecione <strong>Exportar extrato → CSV</strong></div>
+            <div style="margin-top:10px;"><span style="color:var(--pink);font-weight:600;">Fatura cartão:</span></div>
+            <div>1. Vá em <strong>Cartão → Fatura</strong></div>
+            <div>2. Selecione o mês</div>
+            <div>3. Toque em <strong>Exportar → CSV</strong></div>
+          </div>
         </div>
       </div>
     </div>
@@ -549,8 +660,9 @@ function getCat(id) { return STATE.categorias.find(c => c.id === id) || { icon:'
 // NAVEGAÇÃO
 // =============================================
 const pageTitles = {
-  dashboard:'Dashboard', transacoes:'Transações', contas:'Contas e cartões',
-  categorias:'Categorias', metas:'Metas mensais', relatorios:'Relatórios', casal:'Visão do casal'
+  dashboard:'Dashboard', transacoes:'Transações', importar:'Importar extrato',
+  contas:'Contas e cartões', categorias:'Categorias', metas:'Metas mensais',
+  relatorios:'Relatórios', casal:'Visão do casal'
 };
 
 function showPage(id) {
@@ -1005,6 +1117,168 @@ function renderCasal() {
       });
     }
   }, 50);
+}
+
+// =============================================
+// IMPORTAÇÃO CSV
+// =============================================
+let importacaoPendente = [];
+
+function updateImportDica() {
+  const banco = document.getElementById('imp-banco').value;
+  const dica = document.getElementById('imp-dica-texto');
+  if (banco === 'bradesco') dica.textContent = 'No Bradesco: app → Extrato → Exportar → CSV';
+  if (banco === 'inter')    dica.textContent = 'No Inter: app → Extrato → 3 pontinhos → Exportar CSV';
+}
+
+function lerArquivoCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('imp-arquivo-nome').textContent = '📄 ' + file.name;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const texto = e.target.result;
+    const banco = document.getElementById('imp-banco').value;
+    let linhas = [];
+    try {
+      if (banco === 'bradesco') linhas = parseBradesco(texto);
+      if (banco === 'inter')    linhas = parseInter(texto);
+    } catch(err) {
+      alert('Erro ao ler o arquivo. Verifique se selecionou o banco correto e se o arquivo é um CSV válido.');
+      return;
+    }
+    if (linhas.length === 0) {
+      alert('Nenhuma transação encontrada no arquivo. Verifique se o banco selecionado está correto.');
+      return;
+    }
+    mostrarPreview(linhas);
+  };
+  reader.readAsText(file, 'latin1');
+}
+
+function parseBradesco(texto) {
+  // Bradesco exporta com ; como separador
+  // Formato: Data;Histórico;Docto.;Crédito (R$);Débito (R$);Saldo (R$)
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l);
+  const resultado = [];
+  for (let i = 0; i < linhas.length; i++) {
+    const cols = linhas[i].split(';');
+    if (cols.length < 5) continue;
+    const data = cols[0]?.trim();
+    if (!data || !/^\d{2}\/\d{2}\/\d{4}$/.test(data)) continue;
+    const desc    = (cols[1] || '').trim().replace(/"/g,'');
+    const credito = parseValorBR(cols[3]);
+    const debito  = parseValorBR(cols[4]);
+    if (credito > 0) resultado.push({ data: converterData(data), desc, valor: credito, tipo:'receita', selecionado:true });
+    if (debito  > 0) resultado.push({ data: converterData(data), desc, valor: debito,  tipo:'despesa', selecionado:true });
+  }
+  return resultado;
+}
+
+function parseInter(texto) {
+  // Inter exporta com , como separador
+  // Formato: Data,Descrição,Categoria,Valor
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l);
+  const resultado = [];
+  for (let i = 1; i < linhas.length; i++) {
+    const cols = linhas[i].split(',');
+    if (cols.length < 4) continue;
+    const data  = cols[0]?.trim();
+    if (!data || !/^\d{2}\/\d{2}\/\d{4}$/.test(data)) continue;
+    const desc  = (cols[1] || '').trim().replace(/"/g,'');
+    const valor = parseValorBR(cols[cols.length-1]);
+    if (!valor || valor === 0) continue;
+    const tipo = valor < 0 ? 'despesa' : 'receita';
+    resultado.push({ data: converterData(data), desc, valor: Math.abs(valor), tipo, selecionado:true });
+  }
+  return resultado;
+}
+
+function parseValorBR(str) {
+  if (!str) return 0;
+  const limpo = str.replace(/"/g,'').replace(/\./g,'').replace(',','.').trim();
+  return parseFloat(limpo) || 0;
+}
+
+function converterData(dataStr) {
+  // dd/mm/yyyy → yyyy-mm-dd
+  const [d, m, y] = dataStr.split('/');
+  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
+function adivinharCategoria(desc) {
+  const d = desc.toLowerCase();
+  if (/superm|mercado|atacad|pao de acucar|extra|big|hiper/i.test(d)) return 'mercado';
+  if (/posto|gasolina|combustiv|petrobras|shell|ipiranga|br ped/i.test(d)) return 'combustivel';
+  if (/celesc|energisa|enel|cpfl|luz|energia/i.test(d)) return 'luz';
+  if (/casan|sabesp|copasa|sanepar|agua/i.test(d)) return 'agua';
+  if (/claro|vivo|tim|oi |net |internet|fibra/i.test(d)) return 'internet';
+  if (/aluguel|condomin/i.test(d)) return 'moradia';
+  if (/farmacia|drogaria|droga|remedio|saude|medico|clinica|hospital/i.test(d)) return 'saude';
+  if (/escola|facul|curso|educacao|colegio/i.test(d)) return 'educacao';
+  if (/netflix|spotify|amazon|disney|streaming|prime/i.test(d)) return 'lazer';
+  if (/salario|pagamento|folha|proventos/i.test(d)) return 'salario';
+  return 'outros';
+}
+
+function mostrarPreview(linhas) {
+  importacaoPendente = linhas;
+  document.getElementById('imp-alert-count').innerHTML = `✅ <strong>${linhas.length} transações encontradas</strong> — revise e confirme`;
+  const tbody = document.getElementById('imp-tbody');
+  tbody.innerHTML = linhas.map((l, i) => {
+    const catId = adivinharCategoria(l.desc);
+    l.catId = catId;
+    const cat = STATE.categorias.find(c=>c.id===catId) || { icon:'📦', color:'#94a3b8', label:'Outros' };
+    const cls = l.tipo==='despesa' ? 'text-red' : 'text-green';
+    const sign = l.tipo==='despesa' ? '-' : '+';
+    const dateStr = new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR');
+    return `<tr id="imp-row-${i}" style="opacity:1;transition:opacity .2s;">
+      <td style="padding-left:16px;"><input type="checkbox" checked onchange="toggleImportRow(${i},this.checked)" style="cursor:pointer;"/></td>
+      <td class="text-muted">${dateStr}</td>
+      <td style="font-weight:500;">${l.desc}</td>
+      <td>
+        <select style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;" onchange="importacaoPendente[${i}].catId=this.value">
+          ${STATE.categorias.map(c=>`<option value="${c.id}" ${c.id===catId?'selected':''}>${c.icon} ${c.label}</option>`).join('')}
+        </select>
+      </td>
+      <td style="text-align:right;padding-right:16px;" class="${cls} font-bold">${sign} ${fmt(l.valor)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('imp-preview-section').style.display = 'block';
+  document.getElementById('imp-preview-section').scrollIntoView({behavior:'smooth'});
+}
+
+function toggleImportRow(i, checked) {
+  importacaoPendente[i].selecionado = checked;
+  const row = document.getElementById('imp-row-'+i);
+  if (row) row.style.opacity = checked ? '1' : '0.3';
+}
+
+function confirmarImport() {
+  const user  = document.getElementById('imp-user').value;
+  const banco = document.getElementById('imp-banco').value;
+  const conta = STATE.contas.find(c => c.user===user && c.banco.toLowerCase().includes(banco==='bradesco'?'bradesco':'inter'));
+  const contaId = conta ? conta.id : STATE.contas.find(c=>c.user===user)?.id || '';
+  const selecionadas = importacaoPendente.filter(l=>l.selecionado);
+  selecionadas.forEach(l => {
+    STATE.transactions.push({
+      id: nextId++, tipo:l.tipo, user, desc:l.desc,
+      cat:l.catId, conta:contaId, valor:l.valor, data:l.data
+    });
+  });
+  // Ordenar por data desc
+  STATE.transactions.sort((a,b) => new Date(b.data) - new Date(a.data));
+  save();
+  cancelarImport();
+  document.getElementById('imp-arquivo-nome').textContent = '';
+  document.getElementById('imp-file').value = '';
+  alert(`✅ ${selecionadas.length} transações importadas com sucesso!`);
+  showPage('transacoes');
+}
+
+function cancelarImport() {
+  importacaoPendente = [];
+  document.getElementById('imp-preview-section').style.display = 'none';
 }
 
 // =============================================
