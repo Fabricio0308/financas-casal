@@ -1157,20 +1157,58 @@ function lerArquivoCSV(input) {
 }
 
 function parseBradesco(texto) {
-  // Bradesco exporta com ; como separador
-  // Formato: Data;Histórico;Docto.;Crédito (R$);Débito (R$);Saldo (R$)
-  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l);
+  // Formato fatura Bradesco: Data;Histórico;Valor(US$);Valor(R$)
+  // Datas no formato dd/mm (sem ano) — usa ano atual
+  // Também suporta formato extrato: Data;Histórico;Docto;Crédito(R$);Débito(R$);Saldo(R$)
+  const anoAtual = new Date().getFullYear();
+  const linhas = texto.split(/\r|\n/).map(l => l.trim()).filter(l => l);
   const resultado = [];
+
   for (let i = 0; i < linhas.length; i++) {
     const cols = linhas[i].split(';');
-    if (cols.length < 5) continue;
-    const data = cols[0]?.trim();
-    if (!data || !/^\d{2}\/\d{2}\/\d{4}$/.test(data)) continue;
-    const desc    = (cols[1] || '').trim().replace(/"/g,'');
-    const credito = parseValorBR(cols[3]);
-    const debito  = parseValorBR(cols[4]);
-    if (credito > 0) resultado.push({ data: converterData(data), desc, valor: credito, tipo:'receita', selecionado:true });
-    if (debito  > 0) resultado.push({ data: converterData(data), desc, valor: debito,  tipo:'despesa', selecionado:true });
+    if (cols.length < 3) continue;
+    const dataRaw = cols[0]?.trim();
+    if (!dataRaw) continue;
+
+    // Formato fatura: dd/mm (sem ano)
+    const matchFatura = dataRaw.match(/^(\d{2})\/(\d{2})$/);
+    // Formato extrato: dd/mm/yyyy
+    const matchExtrato = dataRaw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+    let dataISO = null;
+    if (matchFatura) {
+      dataISO = `${anoAtual}-${matchFatura[2].padStart(2,'0')}-${matchFatura[1].padStart(2,'0')}`;
+    } else if (matchExtrato) {
+      dataISO = `${matchExtrato[3]}-${matchExtrato[2].padStart(2,'0')}-${matchExtrato[1].padStart(2,'0')}`;
+    } else {
+      continue;
+    }
+
+    const desc = (cols[1] || '').trim().replace(/"/g,'');
+    if (!desc || desc === 'Histórico') continue;
+
+    // Ignora linhas de resumo/totais
+    if (/saldo anterior|total da fatura|pagamento m[íi]nimo|resumo|cota[çc]ao/i.test(desc)) continue;
+
+    let valor = 0;
+    let tipo = 'despesa';
+
+    if (cols.length >= 5) {
+      // Extrato: Crédito na col 3, Débito na col 4
+      const credito = parseValorBR(cols[3]);
+      const debito  = parseValorBR(cols[4]);
+      if (credito > 0) { valor = credito; tipo = 'receita'; }
+      else if (debito > 0) { valor = debito; tipo = 'despesa'; }
+    } else {
+      // Fatura: Valor(R$) na col 3
+      const v = parseValorBR(cols[3] || cols[2]);
+      if (v === 0) continue;
+      valor = Math.abs(v);
+      tipo = v < 0 ? 'receita' : 'despesa'; // pagamentos aparecem negativos
+    }
+
+    if (valor === 0) continue;
+    resultado.push({ data: dataISO, desc, valor, tipo, selecionado: true });
   }
   return resultado;
 }
@@ -1208,16 +1246,32 @@ function converterData(dataStr) {
 
 function adivinharCategoria(desc) {
   const d = desc.toLowerCase();
-  if (/superm|mercado|atacad|pao de acucar|extra|big|hiper/i.test(d)) return 'mercado';
-  if (/posto|gasolina|combustiv|petrobras|shell|ipiranga|br ped/i.test(d)) return 'combustivel';
+  // Mercado / Alimentação
+  if (/superm|mercado|atacad|giassi|beppler|kombrao|komprao|combo atacad|havan|kalunga/i.test(d)) return 'mercado';
+  // Combustível
+  if (/posto|gasolina|combustiv|petrobras|shell|ipiranga|br ped|mimim|auto biguacu|jm auto/i.test(d)) return 'combustivel';
+  // Luz
   if (/celesc|energisa|enel|cpfl|luz|energia/i.test(d)) return 'luz';
+  // Água
   if (/casan|sabesp|copasa|sanepar|agua/i.test(d)) return 'agua';
-  if (/claro|vivo|tim|oi |net |internet|fibra/i.test(d)) return 'internet';
-  if (/aluguel|condomin/i.test(d)) return 'moradia';
-  if (/farmacia|drogaria|droga|remedio|saude|medico|clinica|hospital/i.test(d)) return 'saude';
+  // Internet / Telefone
+  if (/claro|vivo|tim|oi |net |internet|fibra|dlknet/i.test(d)) return 'internet';
+  // Moradia
+  if (/aluguel|condomin|cassol|material/i.test(d)) return 'moradia';
+  // Saúde
+  if (/farmacia|drogaria|droga|remedio|saude|medico|clinica|hospital|panvel|raia|boticario|oboticario|grg\*hospital|materno/i.test(d)) return 'saude';
+  // Educação
   if (/escola|facul|curso|educacao|colegio/i.test(d)) return 'educacao';
-  if (/netflix|spotify|amazon|disney|streaming|prime/i.test(d)) return 'lazer';
-  if (/salario|pagamento|folha|proventos/i.test(d)) return 'salario';
+  // Lazer / Streaming
+  if (/netflix|spotify|amazon|disney|streaming|prime|apple|gaming|burger|coffee|break|barbearia|alpha barb/i.test(d)) return 'lazer';
+  // Alimentação fora
+  if (/restaur|lanchon|padaria|padoka|marmit|rustipan|adegarust|divina gula|chiquinho|voivone|menegatti|palhoca|plh/i.test(d)) return 'lazer';
+  // Salário / Pagamento
+  if (/salario|pagamento|folha|proventos|pagto antecipado/i.test(d)) return 'salario';
+  // Roupa / Calçado
+  if (/calcado|calzon|ropek|confec|studio z/i.test(d)) return 'outros';
+  // Uber / Transporte
+  if (/uber|99|taxi|onibus|metro|transporte/i.test(d)) return 'combustivel';
   return 'outros';
 }
 
