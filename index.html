@@ -388,17 +388,58 @@
     <!-- RELATÓRIOS -->
     <div class="page" id="page-relatorios">
       <div class="section-header mb-4">
-        <div><div class="section-title">Relatórios</div><div class="section-sub">Análises mensais e anuais</div></div>
+        <div><div class="section-title">Relatórios</div><div class="section-sub">Análises e acompanhamento do histórico financeiro</div></div>
       </div>
-      <div class="grid-4 mb-4">
-        <div class="card"><div class="card-title">Maior despesa</div><div class="card-value" style="font-size:18px;" id="rel-maior">—</div><div class="card-sub" id="rel-maior-cat">sem dados</div></div>
-        <div class="card"><div class="card-title">Gasto médio/dia</div><div class="card-value" style="font-size:22px;" id="rel-media">R$ 0</div><div class="card-sub">no mês atual</div></div>
-        <div class="card"><div class="card-title">Taxa de poupança</div><div class="card-value text-green" style="font-size:22px;" id="rel-poupanca">0%</div><div class="card-sub">da receita total</div></div>
-        <div class="card"><div class="card-title">Total de transações</div><div class="card-value" style="font-size:22px;" id="rel-total">0</div><div class="card-sub">registradas</div></div>
+
+      <!-- Seletor de período -->
+      <div class="chart-card mb-4" style="padding:16px 20px;">
+        <div class="flex items-center gap-3" style="flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:600;color:var(--text2);">📅 Período:</span>
+          <select class="form-select" id="rel-mes" style="width:140px;padding:7px 10px;" onchange="renderRelatorios()"></select>
+          <select class="form-select" id="rel-ano" style="width:100px;padding:7px 10px;" onchange="renderRelatorios()"></select>
+          <div class="tabs" style="margin:0;">
+            <div class="tab active" id="tab-rel-mensal" onclick="switchRelTab('mensal')">Mensal</div>
+            <div class="tab" id="tab-rel-anual" onclick="switchRelTab('anual')">Anual</div>
+            <div class="tab" id="tab-rel-parcelas" onclick="switchRelTab('parcelas')">Parcelas futuras</div>
+          </div>
+        </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header"><div><div class="chart-title">Gastos por categoria — comparativo do casal</div></div></div>
-        <canvas id="chartRelatorio" height="220"></canvas>
+
+      <!-- Visão mensal -->
+      <div id="rel-view-mensal">
+        <div class="grid-4 mb-4">
+          <div class="card"><div class="card-title">Total recebido</div><div class="card-value text-green" id="rel-receita">R$ 0</div><div class="card-sub" id="rel-rec-sub">no período</div></div>
+          <div class="card"><div class="card-title">Total gasto</div><div class="card-value text-red" id="rel-maior">R$ 0</div><div class="card-sub" id="rel-maior-cat">no período</div></div>
+          <div class="card"><div class="card-title">Taxa de poupança</div><div class="card-value text-green" style="font-size:22px;" id="rel-poupanca">0%</div><div class="card-sub">da receita total</div></div>
+          <div class="card"><div class="card-title">Transações</div><div class="card-value" style="font-size:22px;" id="rel-total">0</div><div class="card-sub">registradas</div></div>
+        </div>
+        <!-- Gráfico de barras horizontais por categoria -->
+        <div class="chart-card mb-4">
+          <div class="chart-header"><div><div class="chart-title">Gastos por categoria</div><div class="chart-sub" id="rel-chart-sub">Período selecionado</div></div></div>
+          <div id="rel-cat-bars"></div>
+        </div>
+        <!-- Linha do tempo -->
+        <div class="chart-card">
+          <div class="chart-header"><div><div class="chart-title">Evolução mensal</div><div class="chart-sub">Receitas vs Despesas — ano todo</div></div></div>
+          <canvas id="chartRelatorio" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Visão anual -->
+      <div id="rel-view-anual" style="display:none;">
+        <div class="chart-card mb-4">
+          <div class="chart-header"><div><div class="chart-title">Resumo anual por categoria</div><div class="chart-sub" id="rel-ano-sub">Ano selecionado</div></div></div>
+          <div id="rel-anual-bars"></div>
+        </div>
+      </div>
+
+      <!-- Parcelas futuras -->
+      <div id="rel-view-parcelas" style="display:none;">
+        <div class="alert alert-info" style="margin-bottom:16px;">💡 Parcelas futuras geradas a partir das compras parceladas cadastradas</div>
+        <div class="chart-card">
+          <div class="chart-header"><div><div class="chart-title">Compromissos futuros</div><div class="chart-sub">Parcelas dos próximos meses</div></div></div>
+          <div id="rel-parcelas-list"></div>
+        </div>
       </div>
     </div>
 
@@ -479,6 +520,19 @@
       <div class="form-group">
         <label class="form-label">Conta</label>
         <select class="form-select" id="tx-conta"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Parcelado?</label>
+        <select class="form-select" id="tx-parcelado" onchange="toggleParcelas()">
+          <option value="nao">Não — à vista</option>
+          <option value="sim">Sim — parcelado</option>
+        </select>
+      </div>
+      <div class="form-group" id="tx-parcelas-group" style="display:none;">
+        <label class="form-label">Número de parcelas</label>
+        <input class="form-input" id="tx-parcelas" type="number" min="2" max="48" placeholder="Ex: 12"/>
       </div>
     </div>
     <div class="form-footer">
@@ -614,17 +668,21 @@ function defaultContas() {
 
 function defaultCategorias() {
   return [
-    { id:'moradia',     label:'Moradia',     icon:'🏠', color:'#f87171', tipo:'despesa' },
-    { id:'mercado',     label:'Mercado',     icon:'🛒', color:'#fbbf24', tipo:'despesa' },
-    { id:'combustivel', label:'Combustível', icon:'⛽', color:'#fb923c', tipo:'despesa' },
-    { id:'agua',        label:'Água',        icon:'💧', color:'#38bdf8', tipo:'despesa' },
-    { id:'luz',         label:'Luz',         icon:'⚡', color:'#facc15', tipo:'despesa' },
-    { id:'internet',    label:'Internet',    icon:'🌐', color:'#818cf8', tipo:'despesa' },
-    { id:'salario',     label:'Salário',     icon:'💼', color:'#34d399', tipo:'receita' },
-    { id:'lazer',       label:'Lazer',       icon:'🎉', color:'#c084fc', tipo:'despesa' },
-    { id:'saude',       label:'Saúde',       icon:'🏥', color:'#f472b6', tipo:'despesa' },
-    { id:'educacao',    label:'Educação',    icon:'📚', color:'#2dd4bf', tipo:'despesa' },
-    { id:'outros',      label:'Outros',      icon:'📦', color:'#94a3b8', tipo:'despesa' },
+    { id:'moradia',       label:'Moradia',         icon:'🏠', color:'#f87171', tipo:'despesa' },
+    { id:'mercado',       label:'Mercado',          icon:'🛒', color:'#fbbf24', tipo:'despesa' },
+    { id:'combustivel',   label:'Combustível',      icon:'⛽', color:'#fb923c', tipo:'despesa' },
+    { id:'agua',          label:'Água',             icon:'💧', color:'#38bdf8', tipo:'despesa' },
+    { id:'luz',           label:'Luz',              icon:'⚡', color:'#facc15', tipo:'despesa' },
+    { id:'internet',      label:'Internet',         icon:'🌐', color:'#818cf8', tipo:'despesa' },
+    { id:'salario',       label:'Salário',          icon:'💼', color:'#34d399', tipo:'receita' },
+    { id:'restaurante',   label:'Restaurante',      icon:'🍽️', color:'#f97316', tipo:'despesa' },
+    { id:'ifood',         label:'iFood',            icon:'🛵', color:'#ef4444', tipo:'despesa' },
+    { id:'lazer',         label:'Lazer',            icon:'🎉', color:'#c084fc', tipo:'despesa' },
+    { id:'saude',         label:'Saúde',            icon:'🏥', color:'#f472b6', tipo:'despesa' },
+    { id:'educacao',      label:'Educação',         icon:'📚', color:'#2dd4bf', tipo:'despesa' },
+    { id:'barbearia',     label:'Barbearia',        icon:'💈', color:'#a78bfa', tipo:'despesa' },
+    { id:'credito_vista', label:'Crédito à Vista',  icon:'💳', color:'#64748b', tipo:'despesa' },
+    { id:'outros',        label:'Outros',           icon:'📦', color:'#94a3b8', tipo:'despesa' },
   ];
 }
 
@@ -673,7 +731,7 @@ function showPage(id) {
     if (n.textContent.trim().startsWith(pageTitles[id]?.split(' ')[0])) n.classList.add('active');
   });
   document.getElementById('page-title').textContent = pageTitles[id] || id;
-  const pages = { dashboard: renderDashboard, transacoes: () => renderTransactions(), contas: renderContas, categorias: renderCategorias, metas: renderMetas, relatorios: renderRelatorios, casal: renderCasal };
+  const pages = { dashboard: renderDashboard, transacoes: () => renderTransactions(), importar: ()=>{}, contas: renderContas, categorias: renderCategorias, metas: renderMetas, relatorios: () => { initRelatorioSelectors(); renderRelatorios(); }, casal: renderCasal };
   if (pages[id]) pages[id]();
 }
 
@@ -716,20 +774,51 @@ function tipoLabel(t) {
 // =============================================
 // TRANSAÇÕES
 // =============================================
+function toggleParcelas() {
+  const parcelado = document.getElementById('tx-parcelado').value === 'sim';
+  document.getElementById('tx-parcelas-group').style.display = parcelado ? 'block' : 'none';
+}
+
 function addTransaction() {
-  const tipo  = document.getElementById('tx-tipo').value;
-  const user  = document.getElementById('tx-user').value;
-  const desc  = document.getElementById('tx-desc').value.trim();
-  const valor = parseFloat(document.getElementById('tx-valor').value);
-  const data  = document.getElementById('tx-data').value;
-  const cat   = document.getElementById('tx-cat').value;
-  const conta = document.getElementById('tx-conta').value;
+  const tipo      = document.getElementById('tx-tipo').value;
+  const user      = document.getElementById('tx-user').value;
+  const desc      = document.getElementById('tx-desc').value.trim();
+  const valor     = parseFloat(document.getElementById('tx-valor').value);
+  const data      = document.getElementById('tx-data').value;
+  const cat       = document.getElementById('tx-cat').value;
+  const conta     = document.getElementById('tx-conta').value;
+  const parcelado = document.getElementById('tx-parcelado').value === 'sim';
+  const parcelas  = parcelado ? parseInt(document.getElementById('tx-parcelas').value) || 2 : 1;
+
   if (!desc || !valor || !data) { alert('Preencha descrição, valor e data!'); return; }
-  STATE.transactions.unshift({ id: nextId++, tipo, user, desc, cat, conta, valor, data });
+
+  const grupoId = 'g' + nextId++;
+
+  if (parcelado && parcelas > 1) {
+    const valorParcela = Math.round((valor / parcelas) * 100) / 100;
+    const [ano, mes, dia] = data.split('-').map(Number);
+    for (let p = 0; p < parcelas; p++) {
+      const mesP = (mes - 1 + p) % 12;
+      const anoP = ano + Math.floor((mes - 1 + p) / 12);
+      const dataP = `${anoP}-${String(mesP + 1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      STATE.transactions.push({
+        id: nextId++, tipo, user,
+        desc: `${desc} (${p+1}/${parcelas})`,
+        cat, conta, valor: valorParcela, data: dataP,
+        parcelado: true, parcela: p+1, totalParcelas: parcelas, grupoId
+      });
+    }
+  } else {
+    STATE.transactions.push({ id: nextId++, tipo, user, desc, cat, conta, valor, data });
+  }
+
+  STATE.transactions.sort((a,b) => new Date(b.data) - new Date(a.data));
   save();
   closeModal('nova-tx');
   document.getElementById('tx-desc').value = '';
   document.getElementById('tx-valor').value = '';
+  document.getElementById('tx-parcelado').value = 'nao';
+  document.getElementById('tx-parcelas-group').style.display = 'none';
   showPage('transacoes');
 }
 
@@ -1032,37 +1121,173 @@ function initCharts() {
 // RELATÓRIOS
 // =============================================
 let chartRelatorio;
-function renderRelatorios() {
-  const allTx = STATE.transactions;
-  const despesas = allTx.filter(t=>t.tipo==='despesa');
+let relTab = 'mensal';
+
+function switchRelTab(tab) {
+  relTab = tab;
+  ['mensal','anual','parcelas'].forEach(t => {
+    document.getElementById('rel-view-'+t).style.display = t===tab ? 'block' : 'none';
+    const el = document.getElementById('tab-rel-'+t);
+    if (el) el.classList.toggle('active', t===tab);
+  });
+  renderRelatorios();
+}
+
+function initRelatorioSelectors() {
+  const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const selMes = document.getElementById('rel-mes');
+  const selAno = document.getElementById('rel-ano');
+  if (!selMes || !selAno) return;
   const { mes, ano } = getMesAtual();
-  const txMes = txDoMes(mes, ano).filter(t=>t.tipo==='despesa');
-  const receitas = txDoMes(mes, ano).filter(t=>t.tipo==='receita').reduce((s,t)=>s+t.valor,0);
-  const totalDesp = txMes.reduce((s,t)=>s+t.valor,0);
+  if (selMes.options.length === 0) {
+    mesesNomes.forEach((m,i) => { const o=document.createElement('option'); o.value=i; o.textContent=m; selMes.appendChild(o); });
+    selMes.value = mes;
+  }
+  if (selAno.options.length === 0) {
+    for (let y = ano; y >= ano-3; y--) { const o=document.createElement('option'); o.value=y; o.textContent=y; selAno.appendChild(o); }
+    selAno.value = ano;
+  }
+}
 
-  const maior = [...txMes].sort((a,b)=>b.valor-a.valor)[0];
-  document.getElementById('rel-maior').textContent = maior ? fmt(maior.valor) : '—';
-  document.getElementById('rel-maior-cat').textContent = maior ? getCat(maior.cat).label+' · '+maior.desc : 'sem dados';
-  document.getElementById('rel-media').textContent = fmt(totalDesp / new Date().getDate());
-  document.getElementById('rel-poupanca').textContent = receitas > 0 ? Math.round((receitas-totalDesp)/receitas*100)+'%' : '0%';
-  document.getElementById('rel-total').textContent = allTx.length;
+function renderBarrasHorizontais(containerId, dados) {
+  // dados = [{label, valor, color, pct}]
+  const cont = document.getElementById(containerId);
+  if (!cont) return;
+  if (dados.length === 0) {
+    cont.innerHTML = '<div class="empty-state" style="padding:30px;"><div class="empty-state-icon" style="font-size:32px;">📊</div><div class="empty-state-sub">Nenhuma despesa no período</div></div>';
+    return;
+  }
+  const max = Math.max(...dados.map(d=>d.valor), 1);
+  cont.innerHTML = dados.map(d => {
+    const pct = Math.round(d.valor/max*100);
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <span style="font-size:13px;font-weight:600;">${d.label}</span>
+        <span style="font-size:14px;font-weight:800;color:${d.color};">${fmt(d.valor)}</span>
+      </div>
+      <div style="height:10px;background:var(--bg3);border-radius:99px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${d.color};border-radius:99px;transition:width .4s;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px;">${d.pct}% do total</div>
+    </div>`;
+  }).join('');
+}
 
-  setTimeout(() => {
-    const ctx = document.getElementById('chartRelatorio');
-    if (!ctx) return;
-    if (chartRelatorio) chartRelatorio.destroy();
-    const cats = STATE.categorias.filter(c=>c.tipo!=='receita');
-    const dataF = cats.map(c => despesas.filter(t=>t.cat===c.id&&t.user==='fabricio').reduce((s,t)=>s+t.valor,0));
-    const dataT = cats.map(c => despesas.filter(t=>t.cat===c.id&&t.user==='tainara').reduce((s,t)=>s+t.valor,0));
-    chartRelatorio = new Chart(ctx, {
-      type:'bar',
-      data:{ labels: cats.map(c=>c.icon+' '+c.label), datasets:[
-        { label:'Fabrício', data:dataF, backgroundColor:'rgba(108,138,255,0.75)', borderRadius:4, borderSkipped:false },
-        { label:'Tainara',  data:dataT, backgroundColor:'rgba(244,114,182,0.75)', borderRadius:4, borderSkipped:false }
-      ]},
-      options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{usePointStyle:true,pointStyle:'circle'} } }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{callback:v=>v>=1000?'R$'+Math.round(v/1000)+'k':'R$'+v}} } }
+function renderRelatorios() {
+  initRelatorioSelectors();
+  const selMes = document.getElementById('rel-mes');
+  const selAno = document.getElementById('rel-ano');
+  if (!selMes || !selAno) return;
+  const mesSel = parseInt(selMes.value);
+  const anoSel = parseInt(selAno.value);
+  const mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  if (relTab === 'mensal') {
+    const txPeriodo = txDoMes(mesSel, anoSel);
+    const despesas = txPeriodo.filter(t=>t.tipo==='despesa');
+    const receitas = txPeriodo.filter(t=>t.tipo==='receita').reduce((s,t)=>s+t.valor,0);
+    const totalDesp = despesas.reduce((s,t)=>s+t.valor,0);
+
+    document.getElementById('rel-receita').textContent = fmt(receitas);
+    document.getElementById('rel-maior').textContent = fmt(totalDesp);
+    document.getElementById('rel-maior-cat').textContent = mesesNomes[mesSel]+'/'+anoSel;
+    document.getElementById('rel-poupanca').textContent = receitas>0 ? Math.round((receitas-totalDesp)/receitas*100)+'%' : '0%';
+    document.getElementById('rel-total').textContent = txPeriodo.length;
+
+    // Barras por categoria
+    const catTotais = {};
+    despesas.forEach(t=>{ catTotais[t.cat]=(catTotais[t.cat]||0)+t.valor; });
+    const sorted = Object.entries(catTotais).sort((a,b)=>b[1]-a[1]);
+    const dados = sorted.map(([id,val])=>{
+      const c=getCat(id);
+      return { label:c.icon+' '+c.label, valor:val, color:c.color, pct:totalDesp>0?Math.round(val/totalDesp*100):0 };
     });
-  }, 50);
+    renderBarrasHorizontais('rel-cat-bars', dados);
+
+    // Gráfico de linha anual
+    setTimeout(() => {
+      const ctx = document.getElementById('chartRelatorio');
+      if (!ctx) return;
+      if (chartRelatorio) chartRelatorio.destroy();
+      const recArr=[], despArr=[];
+      for (let m=0;m<12;m++) {
+        const tx=txDoMes(m,anoSel);
+        recArr.push(tx.filter(t=>t.tipo==='receita').reduce((s,t)=>s+t.valor,0));
+        despArr.push(tx.filter(t=>t.tipo==='despesa').reduce((s,t)=>s+t.valor,0));
+      }
+      chartRelatorio = new Chart(ctx, {
+        type:'line',
+        data:{ labels:mesesNomes, datasets:[
+          { label:'Receitas', data:recArr, borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.08)', fill:true, tension:0.4, pointBackgroundColor:'#34d399', pointRadius:4 },
+          { label:'Despesas', data:despArr, borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.08)', fill:true, tension:0.4, pointBackgroundColor:'#f87171', pointRadius:4 }
+        ]},
+        options:{ responsive:true, plugins:{ legend:{ position:'top', labels:{usePointStyle:true,pointStyle:'circle'} } }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{callback:v=>v>=1000?'R$'+Math.round(v/1000)+'k':'R$'+v}} } }
+      });
+    }, 50);
+  }
+
+  if (relTab === 'anual') {
+    const cats = STATE.categorias.filter(c=>c.tipo!=='receita');
+    const allDesp = STATE.transactions.filter(t=>t.tipo==='despesa' && new Date(t.data).getFullYear()===anoSel);
+    const total = allDesp.reduce((s,t)=>s+t.valor,0);
+    const dados = cats.map(c=>{
+      const val = allDesp.filter(t=>t.cat===c.id).reduce((s,t)=>s+t.valor,0);
+      return { label:c.icon+' '+c.label, valor:val, color:c.color, pct:total>0?Math.round(val/total*100):0 };
+    }).filter(d=>d.valor>0).sort((a,b)=>b.valor-a.valor);
+    renderBarrasHorizontais('rel-anual-bars', dados);
+  }
+
+  if (relTab === 'parcelas') {
+    renderParcelasFuturas();
+  }
+}
+
+function renderParcelasFuturas() {
+  const cont = document.getElementById('rel-parcelas-list');
+  if (!cont) return;
+  const hoje = new Date();
+  const futuras = STATE.transactions.filter(t => {
+    const d = new Date(t.data+'T12:00:00');
+    return t.parcelado && d >= hoje;
+  }).sort((a,b)=>new Date(a.data)-new Date(b.data));
+
+  if (futuras.length === 0) {
+    cont.innerHTML = '<div class="empty-state" style="padding:30px;"><div class="empty-state-icon" style="font-size:32px;">📅</div><div class="empty-state-title">Nenhuma parcela futura</div><div class="empty-state-sub">Adicione compras parceladas para ver os compromissos futuros</div></div>';
+    return;
+  }
+
+  // Agrupar por mês
+  const porMes = {};
+  futuras.forEach(t => {
+    const d = new Date(t.data+'T12:00:00');
+    const chave = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (!porMes[chave]) porMes[chave] = [];
+    porMes[chave].push(t);
+  });
+
+  const mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  cont.innerHTML = Object.entries(porMes).map(([chave, txs]) => {
+    const [ano,mes] = chave.split('-').map(Number);
+    const total = txs.reduce((s,t)=>s+t.valor,0);
+    const u = USERS[txs[0].user];
+    return `<div style="margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+        ${mesesNomes[mes-1]} ${ano} — <span style="color:var(--amber);">${fmt(total)} comprometido</span>
+      </div>
+      ${txs.map(t=>{
+        const c=getCat(t.cat); const u2=USERS[t.user];
+        const dateStr=new Date(t.data+'T12:00:00').toLocaleDateString('pt-BR');
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="width:32px;height:32px;border-radius:8px;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${c.icon}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">${t.desc}</div>
+            <div style="font-size:11px;color:var(--text3);">${c.label} · ${u2.name} · ${dateStr}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--red);">- ${fmt(t.valor)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
 }
 
 // =============================================
@@ -1246,6 +1471,8 @@ function converterData(dataStr) {
 
 function adivinharCategoria(desc) {
   const d = desc.toLowerCase();
+  // iFood — SEMPRE antes de restaurante
+  if (/^ifd|ifood|ifd\*|i\.f\.d/i.test(d)) return 'ifood';
   // Mercado / Alimentação
   if (/superm|mercado|atacad|giassi|beppler|kombrao|komprao|combo atacad|havan|kalunga/i.test(d)) return 'mercado';
   // Combustível
@@ -1262,14 +1489,14 @@ function adivinharCategoria(desc) {
   if (/farmacia|drogaria|droga|remedio|saude|medico|clinica|hospital|panvel|raia|boticario|oboticario|grg\*hospital|materno/i.test(d)) return 'saude';
   // Educação
   if (/escola|facul|curso|educacao|colegio/i.test(d)) return 'educacao';
+  // Barbearia
+  if (/barbearia|barber|alpha barb|barbeir/i.test(d)) return 'barbearia';
+  // Restaurante / Alimentação fora
+  if (/restaur|lanchon|padaria|padoka|marmit|rustipan|adegarust|divina gula|chiquinho|voivone|menegatti|burger|coffee|break|ney e ney/i.test(d)) return 'restaurante';
   // Lazer / Streaming
-  if (/netflix|spotify|amazon|disney|streaming|prime|apple|gaming|burger|coffee|break|barbearia|alpha barb/i.test(d)) return 'lazer';
-  // Alimentação fora
-  if (/restaur|lanchon|padaria|padoka|marmit|rustipan|adegarust|divina gula|chiquinho|voivone|menegatti|palhoca|plh/i.test(d)) return 'lazer';
+  if (/netflix|spotify|amazon|disney|streaming|prime|apple|gaming|lazer/i.test(d)) return 'lazer';
   // Salário / Pagamento
   if (/salario|pagamento|folha|proventos|pagto antecipado/i.test(d)) return 'salario';
-  // Roupa / Calçado
-  if (/calcado|calzon|ropek|confec|studio z/i.test(d)) return 'outros';
   // Uber / Transporte
   if (/uber|99|taxi|onibus|metro|transporte/i.test(d)) return 'combustivel';
   return 'outros';
